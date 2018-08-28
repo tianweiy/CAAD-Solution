@@ -21,3 +21,7 @@
 CAAD Contest: https://en.caad.geekpwn.org/
 
 [Hyperparameter Tuning Sheet](https://docs.google.com/spreadsheets/d/1zZHtlCbQFmFQTYK0ABiqTt5lBmelljM7IXyBflrxSIY/edit#gid=0)
+
+[Randomization and Transforming Technique](https://github.com/sangxia/nips-2017-adversarial)
+
+
