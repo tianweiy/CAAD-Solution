@@ -19,4 +19,5 @@
 * [Adversarial Examples Are Not Easily Detected: Bypassing Ten Detection Methods](https://arxiv.org/abs/1705.07263), N. Carlini et al., arxiv 2017
 
 CAAD Contest: https://en.caad.geekpwn.org/
-Hyperparameter Tuning Sheet: https://docs.google.com/spreadsheets/d/1zZHtlCbQFmFQTYK0ABiqTt5lBmelljM7IXyBflrxSIY/edit#gid=0
+
+[Hyperparameter Tuning Sheet](https://docs.google.com/spreadsheets/d/1zZHtlCbQFmFQTYK0ABiqTt5lBmelljM7IXyBflrxSIY/edit#gid=0)
