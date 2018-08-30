@@ -1,3 +1,3 @@
 # Defense
 
-https://github.com/tianweiy/Guided-Denoise/tree/master/nips_deploy
+https://github.com/tianweiy/NIPS2017_adv_challenge_defense
