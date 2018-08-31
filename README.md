@@ -32,3 +32,5 @@ Most of the code in my submission are folked from [[1]](https://github.com/cihan
 
 # Results
 
+6th in second development round using simply momentum-based FGSM on ensemble models [misclassification rate:0.7690] 
+
