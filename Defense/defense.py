@@ -1,3 +1,4 @@
+
 """Implementation of sample defense.
 
 This defense loads inception resnet v2 checkpoint and classifies all images
@@ -17,7 +18,8 @@ from scipy.misc import imread
 
 import tensorflow as tf
 
-import inception_resnet_v2
+#import inception_resnet_v2
+from nets import inception_v3, inception_v4, inception_resnet_v2, resnet_v2
 
 slim = tf.contrib.slim
 
@@ -25,8 +27,23 @@ slim = tf.contrib.slim
 tf.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
 
+#tf.flags.DEFINE_string(
+#    'checkpoint_path', '', 'Path to checkpoint for inception network.')
+
 tf.flags.DEFINE_string(
-    'checkpoint_path', '', 'Path to checkpoint for inception network.')
+    'checkpoint_path_ens3_adv_inception_v3', '', 'Path to checkpoint for inception network.')
+
+tf.flags.DEFINE_string(
+    'checkpoint_path_ens4_adv_inception_v3', '', 'Path to checkpoint for inception network.')
+
+tf.flags.DEFINE_string(
+    'checkpoint_path_ens_adv_inception_resnet_v2', '', 'Path to checkpoint for inception network.')
+
+tf.flags.DEFINE_string(
+    'checkpoint_path_adv_inception_v3', '', 'Path to checkpoint for inception network.')
+
+tf.flags.DEFINE_string(
+    'checkpoint_path_resnet', '', 'Path to checkpoint for inception network.')
 
 tf.flags.DEFINE_string(
     'input_dir', '', 'Input directory with images.')
@@ -98,6 +115,11 @@ def load_images(input_dir, batch_shape):
     if idx > 0:
         yield filenames, images
 
+#def graph(padded_input,num_classes=1001,i):
+
+#def stop(padded_input,num_classes=1001,i):
+ # num_iter = FLAGS.num_iter
+  #return tf.less(i, num_iter)
 
 def main(_):
     batch_shape = [FLAGS.batch_size, FLAGS.image_height, FLAGS.image_width, 3]
@@ -119,35 +141,80 @@ def main(_):
             (FLAGS.batch_size, FLAGS.image_resize, FLAGS.image_resize, 3))
 
         with slim.arg_scope(inception_resnet_v2.inception_resnet_v2_arg_scope()):
-            _, end_points = inception_resnet_v2.inception_resnet_v2(
-                padded_input, num_classes=num_classes, is_training=False, create_aux_logits=True)
+            logits_ensadv_res_v2, end_points_ensadv_res_v2 = inception_resnet_v2.inception_resnet_v2(
+            padded_input, num_classes=num_classes, is_training=False, create_aux_logits=True)
 
-        predicted_labels = tf.argmax(end_points['Predictions'], 1)
+        with slim.arg_scope(inception_v3.inception_v3_arg_scope()):
+            logits_adv_v3, end_points_v3 = inception_v3.inception_v3(
+            padded_input, num_classes=num_classes, is_training=False, scope='AdvInceptionV3')
+
+        with slim.arg_scope(inception_v3.inception_v3_arg_scope()):
+            logits_ens3_adv_v3, end_points_ens3_adv_v3 = inception_v3.inception_v3(
+            padded_input, num_classes=num_classes, is_training=False, scope='Ens3AdvInceptionV3')
+
+        with slim.arg_scope(inception_v3.inception_v3_arg_scope()):
+            logits_ens3_adv_v3, end_points_ens4_adv_v3 = inception_v3.inception_v3(
+            padded_input, num_classes=num_classes, is_training=False, scope='Ens4AdvInceptionV3')
+        with slim.arg_scope(resnet_v2.resnet_arg_scope()):
+            logits_resnet, end_points_resnet = resnet_v2.resnet_v2_101(
+            padded_input, num_classes=num_classes, is_training=False)
+
+        logits=(logits_ensadv_res_v2+logits_adv_v3+logits_ens3_adv_v3+logits_ens3_adv_v3+logits_resnet)/5
+        Aux=(end_points_ensadv_res_v2['AuxLogits']+end_points_v3['AuxLogits']+end_points_ens3_adv_v3['AuxLogits']+end_points_ens4_adv_v3['AuxLogits'])*0.1
+
+        predicted_labels = tf.argmax((logits+Aux),1)
+
+        #predicted_labels = tf.argmax(end_points['Predictions'], 1)
 
         # Run computation
-        saver = tf.train.Saver(slim.get_model_variables())
-        session_creator = tf.train.ChiefSessionCreator(
-            scaffold=tf.train.Scaffold(saver=saver),
-            checkpoint_filename_with_path=FLAGS.checkpoint_path,
-            master=FLAGS.master)
+        #saver = tf.train.Saver(slim.get_model_variables())
+        #session_creator = tf.train.ChiefSessionCreator(
+        #    scaffold=tf.train.Scaffold(saver=saver),
+        #    checkpoint_filename_with_path=[FLAGS.checkpoint_path_ens3_adv_inception_v3,FLAGS.checkpoint_path_ens4_adv_inception_v3]
+        #    master=FLAGS.master)
 
-        with tf.train.MonitoredSession(session_creator=session_creator) as sess:
+        #with tf.train.MonitoredSession(session_creator=session_creator) as sess:
+
+        s1 = tf.train.Saver(slim.get_model_variables(scope='AdvInceptionV3'))
+        s2 = tf.train.Saver(slim.get_model_variables(scope='Ens3AdvInceptionV3'))
+        s3 = tf.train.Saver(slim.get_model_variables(scope='Ens4AdvInceptionV3'))
+        s4 = tf.train.Saver(slim.get_model_variables(scope='EnsAdvInceptionResnetV2'))
+        s5 = tf.train.Saver(slim.get_model_variables(scope='resnet_v2'))
+
+
+
+
+
+
+
+        with tf.Session() as sess:
+
+            s1.restore(sess, FLAGS.checkpoint_path_adv_inception_v3)
+            s2.restore(sess, FLAGS.checkpoint_path_ens3_adv_inception_v3)
+            s3.restore(sess, FLAGS.checkpoint_path_ens4_adv_inception_v3)
+            s4.restore(sess, FLAGS.checkpoint_path_ens_adv_inception_resnet_v2)
+            s5.restore(sess, FLAGS.checkpoint_path_resnet)
+
+
             with tf.gfile.Open(FLAGS.output_file, 'w') as out_file:
                 for filenames, images in load_images(FLAGS.input_dir, batch_shape):
                     final_preds = np.zeros(
                         [FLAGS.batch_size, num_classes, itr])
-                    for j in range(itr):
-                        if np.random.randint(0, 2, size=1) == 1:
-                            images = images[:, :, ::-1, :]
+                for j in range(itr):
+                    if np.random.randint(0, 2, size=1) == 1:
+                        images = images[:, :, ::-1, :]
                         resize_shape_ = np.random.randint(310, 331)
-                        pred, aux_pred = sess.run([end_points['Predictions'], end_points['AuxPredictions']],
+
+
+                        final_preds[..., j]= sess.run([predicted_labels],
                                                         feed_dict={x_input: images, img_resize_tensor: [resize_shape_]*2,
                                                                    shape_tensor: np.array([random.randint(0, FLAGS.image_resize - resize_shape_), random.randint(0, FLAGS.image_resize - resize_shape_), FLAGS.image_resize])})
-                        final_preds[..., j] = pred + 0.4 * aux_pred
-                    final_probs = np.sum(final_preds, axis=-1)
-                    labels = np.argmax(final_probs, 1)
-                    for filename, label in zip(filenames, labels):
-                        out_file.write('{0},{1}\n'.format(filename, label))
+
+                final_probs = np.sum(final_preds, axis=-1)
+                labels = np.argmax(final_probs, 1)
+
+                for filename, label in zip(filenames, labels):
+                    out_file.write('{0},{1}\n'.format(filename, label))
 
 
 if __name__ == '__main__':

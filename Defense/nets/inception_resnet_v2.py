@@ -1,10 +1,10 @@
-# Copyright 2017 The TensorFlow Authors All Rights Reserved.
+# Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Contains the definition of the Inception Resnet V2 architecture.
+
 As described in http://arxiv.org/abs/1602.07261.
+
   Inception-v4, Inception-ResNet and the Impact of Residual Connections
     on Learning
   Christian Szegedy, Sergey Ioffe, Vincent Vanhoucke, Alex Alemi
@@ -96,9 +97,11 @@ def inception_resnet_v2_base(inputs,
                              align_feature_maps=False,
                              scope=None):
   """Inception model from  http://arxiv.org/abs/1602.07261.
+
   Constructs an Inception Resnet v2 network from inputs to the given final
   endpoint. This method can construct the network up to the final inception
   block Conv2d_7b_1x1.
+
   Args:
     inputs: a tensor of size [batch_size, height, width, channels].
     final_endpoint: specifies the endpoint to construct the network up to. It
@@ -110,10 +113,12 @@ def inception_resnet_v2_base(inputs,
     align_feature_maps: When true, changes all the VALID paddings in the network
       to SAME padding so that the feature maps are aligned.
     scope: Optional variable_scope.
+
   Returns:
     tensor_out: output tensor corresponding to the final_endpoint.
     end_points: a set of activations for external use, for example summaries or
                 losses.
+
   Raises:
     ValueError: if final_endpoint is not set to one of the predefined values,
       or if the output_stride is not 8 or 16, or if the output_stride is 8 and
@@ -268,6 +273,7 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
                         scope='InceptionResnetV2',
                         create_aux_logits=True):
   """Creates the Inception Resnet V2 model.
+
   Args:
     inputs: a 4-D tensor of size [batch_size, height, width, 3].
     num_classes: number of predicted classes.
@@ -277,6 +283,7 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
       able to reuse 'scope' must be given.
     scope: Optional variable_scope.
     create_aux_logits: Whether to include the auxilliary logits.
+
   Returns:
     logits: the logits outputs of the model.
     end_points: the set of end_points from the inception model.
@@ -293,17 +300,14 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
       if create_aux_logits:
         with tf.variable_scope('AuxLogits'):
           aux = end_points['PreAuxLogits']
-          aux = slim.avg_pool2d(aux, 5, stride=3, padding='SAME',
+          aux = slim.avg_pool2d(aux, 5, stride=3, padding='VALID',
                                 scope='Conv2d_1a_3x3')
           aux = slim.conv2d(aux, 128, 1, scope='Conv2d_1b_1x1')
-          aux = slim.conv2d(aux, 768, 5,
+          aux = slim.conv2d(aux, 768, aux.get_shape()[1:3],
                             padding='VALID', scope='Conv2d_2a_5x5')
-          aux = slim.avg_pool2d(aux, aux.get_shape()[1:3], padding='VALID',
-                                scope='average_pool')
           aux = slim.flatten(aux)
           aux = slim.fully_connected(aux, num_classes, activation_fn=None,
                                      scope='Logits')
-          end_points['AuxPredictions'] = tf.nn.softmax(aux, name='AuxPredictions')
           end_points['AuxLogits'] = aux
 
       with tf.variable_scope('Logits'):
@@ -328,10 +332,12 @@ def inception_resnet_v2_arg_scope(weight_decay=0.00004,
                                   batch_norm_decay=0.9997,
                                   batch_norm_epsilon=0.001):
   """Returns the scope with the default parameters for inception_resnet_v2.
+
   Args:
     weight_decay: the weight decay for weights variables.
     batch_norm_decay: decay for the moving average of batch_norm momentums.
     batch_norm_epsilon: small float added to variance to avoid dividing by zero.
+
   Returns:
     a arg_scope with the parameters needed for inception_resnet_v2.
   """
