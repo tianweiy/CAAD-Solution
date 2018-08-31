@@ -28,7 +28,7 @@ Final Submission at 10:08 a.m. CT on Aug 31, 2018
 
 More Adversarial Attack/Defense experiemnts in the future.
 
-Most of the code in my submission are folked from [1](https://github.com/cihangxie/NIPS2017_adv_challenge_defense)[2](https://github.com/dongyp13/Non-Targeted-Adversarial-Attacks)[3](https://github.com/dongyp13/Targeted-Adversarial-Attack)
+Most of the code in my submission are folked from [[1]](https://github.com/cihangxie/NIPS2017_adv_challenge_defense) [[2]](https://github.com/dongyp13/Non-Targeted-Adversarial-Attacks) [[3]](https://github.com/dongyp13/Targeted-Adversarial-Attack)
 
 # Results
 
