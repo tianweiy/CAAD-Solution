@@ -24,4 +24,9 @@ CAAD Contest: https://en.caad.geekpwn.org/
 
 [Randomization and Transforming Technique](https://github.com/sangxia/nips-2017-adversarial)
 
+Final Submission at 10:08 a.m. CT on Aug 31, 2018
+
+More Adversarial Attack/Defense experiemnts in the future.
+
+# Results
 
